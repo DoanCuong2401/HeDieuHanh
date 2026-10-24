@@ -1,5 +1,4 @@
-# WEEK 1 – NGHIÊN CỨU CƠ CHẾ QUẢN LÝ BỘ NHỚ TRONG XV6
-
+# BÁO CÁO TIẾN ĐỘ TUẦN 1 – MEMORY SANITIZER & RELIABILITY
 **Đề tài:** 26134 – System Call Fuzzer and Kernel Sanitizers
 
 **Thành viên:** Trần Tiến Đạt
