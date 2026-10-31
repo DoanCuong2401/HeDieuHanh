@@ -1,8 +1,7 @@
 # WEEK 2 – MEMORY SANITIZER TEST PLAN
 
 **Thành viên:** Trần Tiến Đạt  
-**Nền tảng:** xv6-RISC-V / QEMU  
-**Phiên bản:** Test Plan V0.1  
+**Nền tảng:** xv6-RISC-V / QEMU   
 **Trạng thái:** Chưa thực thi
 
 ## 1. Mục tiêu
