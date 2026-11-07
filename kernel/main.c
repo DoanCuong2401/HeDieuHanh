@@ -3,6 +3,7 @@
 #include "memlayout.h"
 #include "riscv.h"
 #include "defs.h"
+#include "sanitizer.h"
 
 volatile static int started = 0;
 
@@ -17,6 +18,8 @@ main()
     printk("xv6 kernel is booting\n");
     printk("\n");
     kinit();            // physical page allocator
+    // sanitizer_selftest();
+    // sanitizer_integration_test();
     kvminit();          // create kernel page table
     kvminithart();      // turn on paging
     procinit();         // process table

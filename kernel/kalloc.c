@@ -9,6 +9,8 @@
 #include "riscv.h"
 #include "defs.h"
 
+#include "sanitizer.h"
+
 void freerange(void *pa_start, void *pa_end);
 
 extern char end[]; // first address after kernel.
@@ -68,15 +70,35 @@ kfree(void *pa)
 void *
 kalloc(void)
 {
-  struct run *r;
+    struct run *r;
 
-  acquire(&kmem.lock);
-  r = kmem.freelist;
-  if (r)
-    kmem.freelist = r->next;
-  release(&kmem.lock);
+    acquire(&kmem.lock);
 
-  if (r)
-    memset((char *)r, 5, PGSIZE); // fill with junk
-  return (void *)r;
+    r = kmem.freelist;
+
+    if (r)
+        kmem.freelist = r->next;
+
+    release(&kmem.lock);
+
+    if (r) {
+        int offset = san_check_poison(
+            (void *)r,
+            sizeof(struct run)
+        );
+
+        if (offset >= 0) {
+            uchar actual = ((uchar *)r)[offset];
+
+            san_report_corruption(
+                (void *)r,
+                offset,
+                (uint)actual
+            );
+        }
+
+        memset((char *)r, 5, PGSIZE);
+    }
+
+    return (void *)r;
 }

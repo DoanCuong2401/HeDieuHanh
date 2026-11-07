@@ -8,6 +8,8 @@ OBJS = \
   $K/printk.o \
   $K/uart.o \
   $K/kalloc.o \
+  $K/sanitizer.o \
+  $K/sanitizer_test.o \
   $K/spinlock.o \
   $K/string.o \
   $K/main.o \
