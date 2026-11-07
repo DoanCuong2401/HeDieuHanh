@@ -122,6 +122,9 @@ allocproc(void)
   return 0;
 
 found:
+  // Coverage: initialize before any allocation can fail.
+  covprocinit(p);
+
   p->pid = allocpid();
   p->state = USED;
 
@@ -155,6 +158,9 @@ found:
 static void
 freeproc(struct proc *p)
 {
+  // Coverage: release the buffer and clear its state.
+  covprocfree(p);
+
   if (p->trapframe)
     kfree((void *)p->trapframe);
   p->trapframe = 0;
@@ -354,6 +360,7 @@ kexit(int status)
 
   acquire(&p->lock);
 
+  p->cov_enabled = 0;
   p->xstate = status;
   p->state = ZOMBIE;
 
@@ -529,7 +536,7 @@ forkret(void)
 
     // We can invoke kexec() now that file system is initialized.
     // Put the return value (argc) of kexec into a0.
-    p->trapframe->a0 = kexec("/init", (char *[]){"/init", 0});
+    p->trapframe->a0 = kexec("/init", (char *[]) { "/init", 0 });
     if (p->trapframe->a0 == -1) {
       panic("exec");
     }

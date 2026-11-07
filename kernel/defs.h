@@ -184,3 +184,10 @@ void            virtio_disk_intr(void);
 
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x) / sizeof((x)[0]))
+// coverage.c
+struct proc;
+void            covprocinit(struct proc *);
+void            covprocfree(struct proc *);
+int             covcontrol(int);
+void            covhit(uint);
+int             covread(int, uint64, int);

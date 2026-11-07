@@ -18,6 +18,7 @@ OBJS = \
   $K/trap.o \
   $K/syscall.o \
   $K/sysproc.o \
+  $K/coverage.o \
   $K/bio.o \
   $K/fs.o \
   $K/log.o \
@@ -151,6 +152,9 @@ UPROGS=\
 	$U/_dorphan\
 	$U/_sync\
 	$U/_fuzzer\
+	$U/_coverage_test\
+	$U/_covchildtest\
+	$U/_covreadtest\
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)
