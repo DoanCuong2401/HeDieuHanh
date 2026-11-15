@@ -155,6 +155,8 @@ UPROGS=\
 	$U/_coverage_test\
 	$U/_covchildtest\
 	$U/_covreadtest\
+	$U/_covapitest\
+	$U/_covexectest\
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)
