@@ -11,4 +11,6 @@ void san_report_corruption(
 
 void sanitizer_selftest(void);
 void sanitizer_integration_test(void);
+int san_freepage_count(void);
+void sanitizer_week4_selftest(void);
 #endif

@@ -76,3 +76,85 @@ sanitizer_integration_test(void)
 
     printk("[SAN-T03] FAIL: Corruption not detected\n");
 }
+
+
+void
+sanitizer_week4_selftest(void)
+{
+    int n0, n1, n2;
+    char *p, *q, *a, *b;
+
+    // SAN-T04: Test normal free and reallocation
+    p = (char *)kalloc();
+
+    if (p == 0) {
+        printk("[SAN-T04] FAIL: allocation failed\n");
+        return;
+    }
+
+    kfree(p);
+    q = (char *)kalloc();
+
+    if (q == 0) {
+        printk("[SAN-T04] FAIL: reallocation failed\n");
+        return;
+    }
+
+    if (q == p)
+        printk("[SAN-T04] PASS: No false positive\n");
+    else
+        printk("[SAN-T04] FAIL: unexpected page\n");
+
+    kfree(q);
+
+    // SAN-T05: Test free page counter
+    n0 = san_freepage_count();
+
+    p = (char *)kalloc();
+
+    if (p == 0) {
+        printk("[SAN-T05] FAIL: allocation failed\n");
+        return;
+    }
+
+    n1 = san_freepage_count();
+    kfree(p);
+    n2 = san_freepage_count();
+
+    if (n1 == n0 - 1 && n2 == n0)
+        printk("[SAN-T05] PASS: %d -> %d -> %d\n",
+               n0, n1, n2);
+    else
+        printk("[SAN-T05] FAIL: %d -> %d -> %d\n",
+               n0, n1, n2);
+
+    // SAN-T06: Simulate an outstanding allocation
+    n0 = san_freepage_count();
+
+    a = (char *)kalloc();
+    b = (char *)kalloc();
+
+    if (a == 0 || b == 0) {
+        if (a)
+            kfree(a);
+        if (b)
+            kfree(b);
+        printk("[SAN-T06] FAIL: allocation failed\n");
+        return;
+    }
+
+    // Return only one of the two pages
+    kfree(a);
+    n1 = san_freepage_count();
+
+    // Restore the remaining page
+    kfree(b);
+    n2 = san_freepage_count();
+
+    if (n1 == n0 - 1 && n2 == n0)
+        printk("[SAN-T06] PASS: Outstanding page detected\n");
+    else
+        printk("[SAN-T06] FAIL: unexpected free count\n");
+
+    printk("[SAN-WEEK4] Finished\n");
+}

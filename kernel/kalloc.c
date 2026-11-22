@@ -102,3 +102,21 @@ kalloc(void)
 
     return (void *)r;
 }
+
+// Count free physical pages in the Free List
+int
+san_freepage_count(void)
+{
+    int count = 0;
+    struct run *r;
+
+    acquire(&kmem.lock);
+
+    for (r = kmem.freelist; r != 0; r = r->next) {
+        count++;
+    }
+
+    release(&kmem.lock);
+
+    return count;
+}

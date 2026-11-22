@@ -18,8 +18,14 @@ main()
     printk("xv6 kernel is booting\n");
     printk("\n");
     kinit();            // physical page allocator
+
+    // Week 3 tests
     // sanitizer_selftest();
     // sanitizer_integration_test();
+
+    // Week 4 tests
+    // sanitizer_week4_selftest();
+
     kvminit();          // create kernel page table
     kvminithart();      // turn on paging
     procinit();         // process table
