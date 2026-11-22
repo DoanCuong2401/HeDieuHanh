@@ -157,6 +157,7 @@ UPROGS=\
 	$U/_covreadtest\
 	$U/_covapitest\
 	$U/_covexectest\
+	$U/_covdemo\
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)
