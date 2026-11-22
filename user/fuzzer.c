@@ -92,6 +92,18 @@ main(int argc, char *argv[])
   for (i = 0; i < count; i++)
     run_testcase(i + 1, &state);
 
+#ifdef SAN_W6_TEST
+  if (argc >= 4 && strcmp(argv[3], "san") == 0) {
+    int test_id = count + 1;
+
+      printf("[FUZZ-CASE] id=%d status=BEGIN\n", test_id);
+
+      san_test();
+
+      printf("[FUZZ-CASE] id=%d status=END\n", test_id);
+  }
+#endif
+
   printf("=== FUZZING COMPLETED ===\n");
 
   exit(0);

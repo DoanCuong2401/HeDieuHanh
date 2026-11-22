@@ -16,7 +16,7 @@ fuzzing_completed = False
 with open(log_file, "r") as f:
     for line in f:
         line = line.strip()
-        
+
         # Kiem tra Fuzzer hoan thanh
         if line == "=== FUZZING COMPLETED ===":
             fuzzing_completed = True
@@ -48,11 +48,16 @@ with open(log_file, "r") as f:
         event = {}
 
         # Tách các trường key=value
-        fields = line.strip().split()[1:]
+        fields = line.split()[1:]
 
         for field in fields:
+            if "=" not in field:
+                continue
+
             key, value = field.split("=", 1)
-            event[key] = value
+
+            if key:
+                event[key] = value
         
         # Gan su kien loi voi testcase dang chay
         if current_case is not None:

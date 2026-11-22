@@ -110,3 +110,16 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+#ifdef SAN_W6_TEST
+
+extern void sanitizer_integration_test(void);
+
+uint64
+sys_san_test(void)
+{
+    sanitizer_integration_test();
+    return 0;
+}
+
+#endif
