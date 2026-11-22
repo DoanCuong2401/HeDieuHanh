@@ -1,0 +1,45 @@
+Script started on 2026-11-07 16:24:33+07:00 [TERM="xterm-256color" TTY="/dev/pts/0" COLUMNS="101" LINES="55"]
+qemu-system-riscv64 -machine virt -bios none -kernel kernel/kernel -m 128M -smp 1 -nographic -global virtio-mmio.force-legacy=false -drive file=fs.img,if=none,format=raw,id=x0 -device virtio-blk-device,drive=x0,bus=virtio-mmio-bus.0
+
+xv6 kernel is booting
+
+init: starting sh
+$ coverage_test
+PASS: reject invalid operation
+PASS: no buffer before enable
+PASS: enable and disable
+PASS: control syscalls do not record coverage
+PASS: reset while disabled
+PASS: collect getpid and uptime
+PASS: reject reset while enabled
+PASS: reject self read while enabled
+PASS: record correct point IDs in order
+PASS: reject receive buffer too small
+PASS: reject invalid destination
+PASS: reads and failed reads preserve coverage
+PASS: reset before overflow test
+PASS: full buffer preserves prefix and sets overflow
+PASS: reset full buffer
+PASS: reset clears count and overflow
+ALL COVERAGE BASIC TESTS PASSED
+$ covchildtest
+PASS: disable parent coverage
+PASS: parent buffer contains only its fork
+PASS: read zombie child coverage including exit
+PASS: child coverage remains stable before wait
+PASS: child starts without inherited buffer and exits successfully
+PASS: reject child read after wait
+PASS: reject negative PID
+ALL COVERAGE CHILD TESTS PASSED
+$ covreadtest
+PASS: negative descriptor
+PASS: negative length rejected
+PASS: inode read returns one byte
+PASS: closed descriptor rejected
+PASS: write-only pipe endpoint rejected
+PASS: pipe read returns expected byte
+PASS: zero-length console read
+ALL COVERAGE READ TESTS PASSED
+$ QEMU: Terminated
+
+Script done on 2026-11-07 16:24:58+07:00 [COMMAND_EXIT_CODE="0"]

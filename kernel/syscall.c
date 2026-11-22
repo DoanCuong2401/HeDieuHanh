@@ -6,6 +6,7 @@
 #include "proc.h"
 #include "syscall.h"
 #include "defs.h"
+#include "coverage.h"
 
 // Fetch the uint64 at addr from the current process.
 int
@@ -103,33 +104,37 @@ extern uint64 sys_link(void);
 extern uint64 sys_mkdir(void);
 extern uint64 sys_close(void);
 extern uint64 sys_sync(void);
+extern uint64 sys_cov_ctl(void);
+extern uint64 sys_cov_read(void);
 
 // An array mapping syscall numbers from syscall.h
 // to the function that handles the system call.
 static uint64 (*syscalls[])(void) = {
   // clang-format off
-  [SYS_fork]    = sys_fork,
-  [SYS_exit]    = sys_exit,
-  [SYS_wait]    = sys_wait,
-  [SYS_pipe]    = sys_pipe,
-  [SYS_read]    = sys_read,
-  [SYS_kill]    = sys_kill,
-  [SYS_exec]    = sys_exec,
-  [SYS_fstat]   = sys_fstat,
-  [SYS_chdir]   = sys_chdir,
-  [SYS_dup]     = sys_dup,
-  [SYS_getpid]  = sys_getpid,
-  [SYS_sbrk]    = sys_sbrk,
-  [SYS_pause]   = sys_pause,
-  [SYS_uptime]  = sys_uptime,
-  [SYS_open]    = sys_open,
-  [SYS_write]   = sys_write,
-  [SYS_mknod]   = sys_mknod,
-  [SYS_unlink]  = sys_unlink,
-  [SYS_link]    = sys_link,
-  [SYS_mkdir]   = sys_mkdir,
-  [SYS_close]   = sys_close,
-  [SYS_sync]    = sys_sync,
+  [SYS_fork]     = sys_fork,
+  [SYS_exit]     = sys_exit,
+  [SYS_wait]     = sys_wait,
+  [SYS_pipe]     = sys_pipe,
+  [SYS_read]     = sys_read,
+  [SYS_kill]     = sys_kill,
+  [SYS_exec]     = sys_exec,
+  [SYS_fstat]    = sys_fstat,
+  [SYS_chdir]    = sys_chdir,
+  [SYS_dup]      = sys_dup,
+  [SYS_getpid]   = sys_getpid,
+  [SYS_sbrk]     = sys_sbrk,
+  [SYS_pause]    = sys_pause,
+  [SYS_uptime]   = sys_uptime,
+  [SYS_open]     = sys_open,
+  [SYS_write]    = sys_write,
+  [SYS_mknod]    = sys_mknod,
+  [SYS_unlink]   = sys_unlink,
+  [SYS_link]     = sys_link,
+  [SYS_mkdir]    = sys_mkdir,
+  [SYS_close]    = sys_close,
+  [SYS_sync]     = sys_sync,
+  [SYS_cov_ctl]  = sys_cov_ctl,
+  [SYS_cov_read] = sys_cov_read,
   // clang-format on
 };
 
@@ -141,10 +146,20 @@ syscall(void)
 
   num = p->trapframe->a7;
   if (num > 0 && num < NELEM(syscalls) && syscalls[num]) {
-    // Use num to lookup the system call function for num, call it,
-    // and store its return value in p->trapframe->a0
+    /*
+     * Exclude coverage APIs:
+     * ENABLE, DISABLE, RESET and READ must not record themselves.
+     */
+    if (num != SYS_cov_ctl && num != SYS_cov_read) {
+      covhit(COV_DISPATCH_VALID);
+      covhit(COV_SYSCALL_BASE + (uint)num);
+    }
+
+    // Call the handler and store its return value in a0.
     p->trapframe->a0 = syscalls[num]();
   } else {
+    covhit(COV_DISPATCH_INVALID);
+
     printk("%d %s: unknown sys call %d\n", p->pid, p->name, num);
     p->trapframe->a0 = -1;
   }

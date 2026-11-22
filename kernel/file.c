@@ -12,6 +12,7 @@
 #include "file.h"
 #include "stat.h"
 #include "proc.h"
+#include "coverage.h"
 
 struct devsw devsw[NDEV];
 struct {
@@ -108,16 +109,23 @@ fileread(struct file *f, uint64 addr, int n)
 {
   int r = 0;
 
-  if (f->readable == 0 || n < 0)
+  if (f->readable == 0 || n < 0) {
+    covhit(COV_FILE_READ_REJECT);
     return -1;
+  }
 
   if (f->type == FD_PIPE) {
+    covhit(COV_FILE_READ_PIPE);
     r = piperead(f->pipe, addr, n);
   } else if (f->type == FD_DEVICE) {
-    if (f->major < 0 || f->major >= NDEV || !devsw[f->major].read)
+    covhit(COV_FILE_READ_DEVICE);
+    if (f->major < 0 || f->major >= NDEV || !devsw[f->major].read) {
+      covhit(COV_FILE_READ_BAD_DEV);
       return -1;
+    }
     r = devsw[f->major].read(1, addr, n);
   } else if (f->type == FD_INODE) {
+    covhit(COV_FILE_READ_INODE);
     ilock(f->ip);
     if ((r = readi(f->ip, 1, addr, f->off, n)) > 0)
       f->off += r;

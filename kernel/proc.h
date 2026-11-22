@@ -101,4 +101,14 @@ struct proc {
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
+  /*
+   * Coverage state.
+   * The running process owns writes to its buffer.
+   * Parent access will be restricted to a ZOMBIE child.
+   */
+  uint *cov_buffer;
+  uint cov_count;
+  uint cov_capacity;
+  uint cov_overflow;
+    int cov_enabled;             // Coverage collection enabled
 };
