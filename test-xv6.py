@@ -5,6 +5,7 @@
 #
 # ./test-xv6.py usertests  (runs usertests)
 # ./test-xv6.py -q usertests (runs the quick tests of usertests)
+# CPUS=1 ./test-xv6.py coverage (runs the fixed coverage regression)
 # ./test-xv6.py crash  (runs the crash tests)
 # ./test-xv6.py log (runs the log crash test)
 
@@ -20,11 +21,13 @@ args = parser.parse_args()
 
 class QEMU(object):
 
-    def __init__(self, reset=False):
+    def __init__(self, reset=False, snapshot=False):
         if reset:
             self.build_xv6()
             self.reset_fs()
         q = ["make", "qemu"]
+        if snapshot:
+            q.append("QEMU_EXTRA=-snapshot")
         self.proc = subprocess.Popen(q, stdin=subprocess.PIPE,
                                       stdout=subprocess.PIPE,
                                       stderr=subprocess.STDOUT)
@@ -84,8 +87,8 @@ class QEMU(object):
             self.outbytes.extend(buf)
         self.output = self.outbytes.decode("utf-8", "replace")
 
-    def lines(self):
-        return self.output.splitlines()
+    def lines(self, start=0):
+        return self.output[start:].splitlines()
 
     def error(self, *regexps):
         print("FAIL: match failed", regexps)
@@ -93,9 +96,9 @@ class QEMU(object):
         self.stop()
         sys.exit(1)
 
-    def match(self, *regexps, exit=True):
+    def match(self, *regexps, exit=True, start=0):
         found = False
-        for line in self.lines():
+        for line in self.lines(start):
             if any(re.match(r, line) for r in regexps):
                 print(line)
                 found = True
@@ -115,7 +118,7 @@ class QEMU(object):
                 print(line)
         self.reported = end
 
-    def monitor(self, *regexps, progress="", timeout):
+    def monitor(self, *regexps, progress="", timeout, start=0):
         deadline = time.time() + timeout
         while True:
             time.sleep(1)
@@ -125,7 +128,7 @@ class QEMU(object):
             self.read()
             if progress:
                 self.progress(progress)
-            if self.match(*regexps, exit=False):
+            if self.match(*regexps, exit=False, start=start):
                 return
 
 def crash_log():
@@ -206,6 +209,55 @@ def test_usertests(test=""):
     q.cmd("usertests" + opt + "\n")
     q.monitor('^ALL TESTS PASSED', progress='test', timeout=timeout)
     q.stop()
+
+def test_coverage():
+    demo = (
+        "file: read expected=1 each, actual: 1, points: 1 261 4 8, "
+        "recorded=4 unique=4 overflow=0 [PASS]",
+        "file-repeat: read expected=1 each, actual: 1 1, points: 1 261 4 8 1 261 4 8, "
+        "recorded=8 unique=4 overflow=0 [PASS]",
+        "pipe: read expected=1 each, actual: 1, points: 1 261 4 6, "
+        "recorded=4 unique=4 overflow=0 [PASS]",
+        "suite: snapshots=3/3 recorded=16 unique=5 overflow=0 [PASS]",
+    )
+    regressions = (
+        ("coverage_test", "ALL COVERAGE BASIC TESTS PASSED", 30),
+        ("covchildtest", "ALL COVERAGE CHILD TESTS PASSED", 30),
+        ("covreadtest", "ALL COVERAGE READ TESTS PASSED", 30),
+        ("covapitest", "ALL COVERAGE API TESTS PASSED", 30),
+        ("covexectest", "ALL COVERAGE EXEC TESTS PASSED", 30),
+        ("usertests -q", "ALL TESTS PASSED", 300),
+    )
+    prompt = r"^\$ "
+
+    q = QEMU(snapshot=True)
+    try:
+        q.monitor(prompt, timeout=90)
+        for attempt in range(1, 3):
+            start = len(q.output)
+            q.cmd("covdemo\n")
+            q.monitor(prompt, timeout=30, start=start)
+            lines = q.lines(start)
+            observed = tuple(line for line in lines
+                             if line.startswith(("file:", "file-repeat:", "pipe:", "suite:")))
+            if observed != demo:
+                q.error(f"covdemo run {attempt} did not match expected results")
+            print(f"covdemo run {attempt} PASS")
+            for line in observed:
+                print(line)
+
+        for command, expected, timeout in regressions:
+            start = len(q.output)
+            q.cmd(command + "\n")
+            q.monitor(prompt, timeout=timeout, start=start)
+            if expected not in q.lines(start):
+                q.error(expected)
+
+        q.save_output()
+        print("ALL WEEK 7 COVERAGE CHECKS PASSED")
+    finally:
+        q.stop()
+        q.proc.wait(timeout=5)
 
 def main():
     print(args)

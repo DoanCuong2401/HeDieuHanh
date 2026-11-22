@@ -8,5 +8,6 @@ _*
 /mkfs/mkfs
 /kernel/kernel
 /user/usys.S
+/test-xv6.out
 .gdbinit
 TAGS
