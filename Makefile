@@ -154,6 +154,7 @@ UPROGS=\
 	$U/_fuzzer\
 	$U/_fuzzer_week5\
 	$U/_fuzzer_week6\
+	$U/_fuzzer_week7\
 	$U/_covtrack_test\
 	$U/_corpus_test\
 	$U/_covmock_test\
