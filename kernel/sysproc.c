@@ -110,3 +110,34 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+/*
+ * cov_ctl(op):
+ * control coverage of the calling process.
+ */
+uint64
+sys_cov_ctl(void)
+{
+  int op;
+
+  argint(0, &op);
+  return covcontrol(op);
+}
+
+/*
+ * cov_read(pid, buf, buf_bytes):
+ * copy a coverage snapshot to user space.
+ */
+uint64
+sys_cov_read(void)
+{
+  int pid;
+  uint64 buf;
+  int buf_bytes;
+
+  argint(0, &pid);
+  argaddr(1, &buf);
+  argint(2, &buf_bytes);
+
+  return covread(pid, buf, buf_bytes);
+}

@@ -15,6 +15,7 @@
 #include "sleeplock.h"
 #include "file.h"
 #include "fcntl.h"
+#include "coverage.h"
 
 // Fetch the nth word-sized system call argument as a file descriptor
 // and return both the descriptor and the corresponding struct file.
@@ -74,8 +75,12 @@ sys_read(void)
 
   argaddr(1, &p);
   argint(2, &n);
-  if (argfd(0, 0, &f) < 0)
+  if (argfd(0, 0, &f) < 0) {
+    covhit(COV_READ_BAD_FD);
     return -1;
+  }
+
+  covhit(COV_READ_FORWARD);
   return fileread(f, p, n);
 }
 

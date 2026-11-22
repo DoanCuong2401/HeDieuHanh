@@ -1,0 +1,30 @@
+Script started on 2026-11-15 11:21:41+07:00 [TERM="xterm-256color" TTY="/dev/pts/0" COLUMNS="101" LINES="55"]
+qemu-system-riscv64 -machine virt -bios none -kernel kernel/kernel -m 128M -smp 4 -nographic -global virtio-mmio.force-legacy=false -drive file=fs.img,if=none,format=raw,id=x0 -device virtio-blk-device,drive=x0,bus=virtio-mmio-bus.0
+
+xv6 kernel is booting
+
+hart 1 starting
+hart 3 starting
+hart 2 starting
+init: starting sh
+$ covapitest
+PASS: reject negative receive size
+PASS: reject zero receive size
+PASS: reject copyout into read-only text
+PASS: reject destination at end of user memory
+PASS: failed copies preserve source coverage
+PASS: re-enable preserves previous points
+PASS: 50 reset and reuse cycles
+PASS: reject reading child before it exits
+PASS: read child after synchronized completion
+PASS: child cannot read parent coverage
+PASS: reject child PID after reaping
+ALL COVERAGE API TESTS PASSED
+$ covexectest
+PASS: coverage survives successful exec
+PASS: 32 fork exec wait cycles with fresh child state
+PASS: failed exec preserves coverage
+ALL COVERAGE EXEC TESTS PASSED
+$ QEMU: Terminated
+
+Script done on 2026-11-15 11:22:00+07:00 [COMMAND_EXIT_CODE="0"]

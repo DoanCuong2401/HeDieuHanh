@@ -1,4 +1,3 @@
-
 K=kernel
 U=user
 
@@ -19,6 +18,7 @@ OBJS = \
   $K/trap.o \
   $K/syscall.o \
   $K/sysproc.o \
+  $K/coverage.o \
   $K/bio.o \
   $K/fs.o \
   $K/log.o \
@@ -153,9 +153,16 @@ UPROGS=\
 	$U/_sync\
 	$U/_fuzzer\
 	$U/_fuzzer_week5\
+	$U/_fuzzer_week6\
 	$U/_covtrack_test\
 	$U/_corpus_test\
 	$U/_covmock_test\
+	$U/_coverage_test\
+	$U/_covchildtest\
+	$U/_covreadtest\
+	$U/_covapitest\
+	$U/_covexectest\
+	$U/_covdemo\
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)
