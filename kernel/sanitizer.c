@@ -22,10 +22,13 @@ san_check_poison(void *page, uint metadata_bytes)
 void
 san_report_corruption(void *page, int offset, uint actual)
 {
-    printk("[SANITIZER] FREED_PAGE_CORRUPTION\n");
-
-    printk("page=%p offset=%d expected=0x%x actual=0x%x\n",
-        (void *)page, offset, (uint)SAN_POISON, actual);
+    printk(
+        "[SAN-EVENT] type=FREED_PAGE_CORRUPTION page=%p offset=%d expected=0x%x actual=0x%x\n",
+        (void *)page,
+        offset,
+        (uint)SAN_POISON,
+        actual
+    );
 
     panic("memory sanitizer");
 }

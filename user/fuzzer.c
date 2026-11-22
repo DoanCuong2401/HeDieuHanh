@@ -31,6 +31,8 @@ run_testcase(int id, uint *state)
 
   choice = random_next(state) % 3;
 
+  printf("[FUZZ-CASE] id=%d status=BEGIN\n", id);
+
   switch (choice) {
   case 0:
     result = getpid();
@@ -55,6 +57,7 @@ run_testcase(int id, uint *state)
     printf("TC %d: invalid operation\n", id);
     break;
   }
+  printf("[FUZZ-CASE] id=%d status=END\n", id);
 }
 
 int
