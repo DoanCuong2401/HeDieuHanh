@@ -1,3 +1,4 @@
+
 K=kernel
 U=user
 
@@ -151,6 +152,10 @@ UPROGS=\
 	$U/_dorphan\
 	$U/_sync\
 	$U/_fuzzer\
+	$U/_fuzzer_week5\
+	$U/_covtrack_test\
+	$U/_corpus_test\
+	$U/_covmock_test\
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)
