@@ -158,3 +158,75 @@ sanitizer_week4_selftest(void)
 
     printk("[SAN-WEEK4] Finished\n");
 }
+
+void
+sanitizer_week7_planted_test(void)
+{
+    char *page = (char *)kalloc();
+
+    if (page == 0) {
+        printk("[SAN-T07] FAIL: Cannot allocate page\n");
+        return;
+    }
+
+    // Giai phong trang
+    kfree(page);
+
+    // SAN-T07: Write-after-free tai byte 200
+    ((volatile uchar *)page)[200] = 0xaa;
+
+    int offset = san_check_poison(page, sizeof(void *));
+
+    if (offset == 200)
+        printk("[SAN-T07] PASS: Write-after-free detected at offset 200\n");
+    else
+        printk("[SAN-T07] FAIL: Detected offset=%d\n", offset);
+
+    // Khoi phuc poison
+    ((volatile uchar *)page)[200] = 1;
+
+    // SAN-T08: Thay doi nhieu byte sau khi free
+    ((volatile uchar *)page)[300] = 0xbb;
+    ((volatile uchar *)page)[500] = 0xcc;
+
+    offset = san_check_poison(page, sizeof(void *));
+
+    if (offset == 300)
+        printk("[SAN-T08] PASS: First corruption at offset 300\n");
+    else
+        printk("[SAN-T08] FAIL: Detected offset=%d\n", offset);
+
+    // Khoi phuc poison
+    ((volatile uchar *)page)[300] = 1;
+    ((volatile uchar *)page)[500] = 1;
+
+        // SAN-T09: Kiem tra false positive
+    offset = san_check_poison(page, sizeof(void *));
+
+    if (offset == -1)
+        printk("[SAN-T09] PASS: No false positive\n");
+    else
+        printk("[SAN-T09] FAIL: Unexpected corruption at offset %d\n", offset);
+
+        // SAN-T10: Leak check bang free page counter
+    int before = san_freepage_count();
+
+    char *held = (char *)kalloc();
+
+    if (held == 0) {
+        printk("[SAN-T10] FAIL: Cannot allocate page\n");
+    } else {
+        // Gia lap mot trang chua duoc giai phong
+        int during = san_freepage_count();
+
+        // Giai phong de khoi phuc trang thai
+        kfree(held);
+        int after = san_freepage_count();
+
+        if (during == before - 1 && after == before)
+            printk("[SAN-T10] PASS: Outstanding allocation tracked and restored\n");
+        else
+            printk("[SAN-T10] FAIL: %d -> %d -> %d\n",
+                   before, during, after);
+    }
+}

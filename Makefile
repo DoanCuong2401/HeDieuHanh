@@ -85,6 +85,9 @@ ifeq ($(SAN_W6_TEST),1)
 CFLAGS += -DSAN_W6_TEST
 endif
 
+ifeq ($(SAN_W7_TEST),1)
+CFLAGS += -DSAN_W7_TEST
+endif
 # Disable PIE when possible (for Ubuntu 16.10 toolchain)
 ifneq ($(shell $(CC) -dumpspecs 2>/dev/null | grep -e '[^f]no-pie'),)
 CFLAGS += -fno-pie -no-pie

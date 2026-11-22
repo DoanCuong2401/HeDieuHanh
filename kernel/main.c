@@ -6,7 +6,9 @@
 #include "sanitizer.h"
 
 volatile static int started = 0;
-
+#ifdef SAN_W7_TEST
+extern void sanitizer_week7_planted_test(void);
+#endif
 // start() jumps here in supervisor mode on all CPUs.
 void
 main()
@@ -25,6 +27,9 @@ main()
 
     // Week 4 tests
     // sanitizer_week4_selftest();
+    #ifdef SAN_W7_TEST
+    sanitizer_week7_planted_test();
+    #endif
 
     kvminit();          // create kernel page table
     kvminithart();      // turn on paging
