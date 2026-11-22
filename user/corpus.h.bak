@@ -1,0 +1,65 @@
+#ifndef CORPUS_H
+#define CORPUS_H
+
+#include "kernel/types.h"
+
+#define CORPUS_CAPACITY 64
+
+struct fuzz_case {
+  uint seed;
+  uint type;
+};
+
+struct corpus {
+  struct fuzz_case cases[CORPUS_CAPACITY];
+  uint count;
+};
+
+static void
+corpus_init(struct corpus *c)
+{
+  c->count = 0;
+}
+
+/*
+ * Add testcase only when it discovers new coverage.
+ * Return:
+ *   1: testcase added
+ *   0: no new coverage or duplicate
+ *  -1: corpus is full
+ */
+static int
+corpus_add(struct corpus *c, uint seed, uint type, int new_points)
+{
+  uint i;
+
+  if (new_points <= 0)
+    return 0;
+
+  for (i = 0; i < c->count; i++) {
+    if (c->cases[i].seed == seed &&
+        c->cases[i].type == type)
+      return 0;
+  }
+
+  if (c->count >= CORPUS_CAPACITY)
+    return -1;
+
+  c->cases[c->count].seed = seed;
+  c->cases[c->count].type = type;
+  c->count++;
+
+  return 1;
+}
+
+static int
+corpus_get(struct corpus *c, uint index, struct fuzz_case *out)
+{
+  if (index >= c->count)
+    return -1;
+
+  *out = c->cases[index];
+  return 0;
+}
+
+#endif
